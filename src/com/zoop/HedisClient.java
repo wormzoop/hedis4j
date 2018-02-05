@@ -9,8 +9,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * hedis客户端
@@ -88,13 +86,31 @@ public class HedisClient {
 			writer.newLine();
 			writer.write(key);
 			writer.flush();
+			socket.shutdownOutput();
 			InputStream in = socket.getInputStream();
 			int len;
+			byte[] resbuf = null;
 			byte[] buf = new byte[1024 * 1024];
 			while((len = in.read(buf)) != -1) {
+				if(resbuf != null) {
+					byte[] temp = new byte[resbuf.length];
+					System.arraycopy(resbuf, 0, temp, 0, len);
+					resbuf = new byte[temp.length+len];
+					System.arraycopy(temp, 0, resbuf, 0, temp.length);
+					System.arraycopy(buf, 0, resbuf, temp.length, len);
+				}else {
+					resbuf = new byte[len];
+					System.arraycopy(buf,0,resbuf,0,len);
+				}
 			}
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(buf));
-			return ois.readObject();
+			if(resbuf != null) {
+				String str = new String(resbuf);
+				System.out.println(str);
+				ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(buf));
+				return ois.readObject();
+			}else {
+				return null;
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
