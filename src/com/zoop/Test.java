@@ -6,14 +6,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Map;
 
 public class Test {
 
 	public static void main(String[]args) {
-		HedisClient client = new HedisClient("localhost",8889,"123");
+		HedisClient client = new HedisClient("192.168.0.103",8889,"123");
 		client.set("name", "jiji", -1);
-//		String name = (String)client.get("name");
-//		System.out.println(name);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map = (Map<String, Object>)client.get("name");
+		System.out.println(map.get("value"));
 //		test();
 	}
 
