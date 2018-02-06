@@ -1,9 +1,12 @@
 package com.zoop;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,13 +41,31 @@ public class HedisClient {
 		Socket socket = null;
 		try {
 			socket = new Socket(ip,port);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("key", key);
-			map.put("type", "SET");
-			map.put("value", value);
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-			oos.writeObject(map);
-			oos.flush();
+//			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+			dos.writeUTF("SET");
+			dos.writeUTF(key);
+			ByteArrayOutputStream bao = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bao);
+			oos.writeObject(value);
+			byte[] buf = bao.toByteArray();
+			System.out.println(Arrays.toString(buf));
+			dos.write(buf);
+			dos.flush();
+			dos.close();
+//			writer.write("SET");
+//			writer.newLine();
+//			writer.write(key);
+//			writer.newLine();
+//			ByteArrayOutputStream bao = new ByteArrayOutputStream();
+//			ObjectOutputStream oos = new ObjectOutputStream(bao);
+//			oos.writeObject(value);
+//			byte[] buf = bao.toByteArray();
+//			System.out.println(Arrays.toString(buf));
+//			System.out.println(new String(buf));
+//			writer.write(new String(buf));
+//			writer.flush();
+//			writer.close();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally{
